@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         ) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
             addMarkers(googleMap)
+
+            // Set custom info window adapter
+            googleMap.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
         }
     }
 
@@ -52,6 +55,13 @@ class MainActivity : AppCompatActivity() {
                     .position(place.latLng)
                     .icon(bicycleIcon)
             )
+
+            // Set place as the tag on the marker object so it can be referenced within
+            // MarkerInfoWindowAdapter
+            if (marker != null) {
+                marker.tag = place
+                marker.
+            }
         }
     }
 }
