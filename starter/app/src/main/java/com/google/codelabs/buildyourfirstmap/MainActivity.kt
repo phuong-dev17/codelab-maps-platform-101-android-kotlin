@@ -22,7 +22,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.codelabs.buildyourfirstmap.place.Place
+import com.google.codelabs.buildyourfirstmap.place.PlaceRenderer
 import com.google.codelabs.buildyourfirstmap.place.PlacesReader
+import com.google.maps.android.clustering.Cluster
+import com.google.maps.android.clustering.ClusterManager
 
 class MainActivity : AppCompatActivity() {
     private val places: List<Place> by lazy {
@@ -40,28 +43,34 @@ class MainActivity : AppCompatActivity() {
             R.id.map_fragment
         ) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
-            addMarkers(googleMap)
-
-            // Set custom info window adapter
-            googleMap.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
+            addClusteredMarkers(googleMap)
         }
     }
 
-    private fun addMarkers(googleMap: GoogleMap) {
-        places.forEach { place ->
-            val marker = googleMap.addMarker(
-                MarkerOptions()
-                    .title(place.name)
-                    .position(place.latLng)
-                    .icon(bicycleIcon)
-            )
+    private fun addClusteredMarkers(googleMap: GoogleMap) {
+        val clusterManager = ClusterManager<Place>(this, googleMap)
 
-            // Set place as the tag on the marker object so it can be referenced within
-            // MarkerInfoWindowAdapter
-            if (marker != null) {
-                marker.tag = place
-                marker.
-            }
+        clusterManager.renderer = PlaceRenderer(this, googleMap, clusterManager)
+
+        clusterManager.markerCollection.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
+
+        clusterManager.addItems(places)
+        clusterManager.cluster()
+
+        clusterManager.setOnClusterClickListener {item ->
+            addCircle(googleMap, item)
+
+            return@setOnClusterClickListener false
+        }
+
+        googleMap.setOnCameraIdleListener {
+            clusterManager.onCameraIdle()
         }
     }
+
+    private fun addCircle(googleMap: GoogleMap, item: Cluster<Place>?) {
+        TODO("Not yet implemented")
+    }
+
+
 }
