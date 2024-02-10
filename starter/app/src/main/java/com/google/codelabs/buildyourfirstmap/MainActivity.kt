@@ -23,6 +23,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.codelabs.buildyourfirstmap.place.Place
@@ -51,9 +52,10 @@ class MainActivity : AppCompatActivity() {
         mapFragment?.getMapAsync { googleMap ->
             // Ensure all places are visible in the map.
             googleMap.setOnMapLoadedCallback {
-                val bounds = LatLngBounds.builder()
-                places.forEach { bounds.include(it.latLng) }
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 20))
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    LatLng(37.7557557, -122.4208508),
+                    11.0f)
+                )
             }
 
             addClusteredMarkers(googleMap)
