@@ -17,9 +17,13 @@ package com.google.codelabs.buildyourfirstmap
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.codelabs.buildyourfirstmap.place.Place
 import com.google.codelabs.buildyourfirstmap.place.PlaceRenderer
@@ -35,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         val color = ContextCompat.getColor(this, R.color.colorPrimary)
         BitmapHelper.vectorToBitmap(this, R.drawable.ic_directions_bike_black_24dp, color)
     }
+    private var circle: Circle? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,6 +49,13 @@ class MainActivity : AppCompatActivity() {
             R.id.map_fragment
         ) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
+            // Ensure all places are visible in the map.
+            googleMap.setOnMapLoadedCallback {
+                val bounds = LatLngBounds.builder()
+                places.forEach { bounds.include(it.latLng) }
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 20))
+            }
+
             addClusteredMarkers(googleMap)
         }
     }
@@ -57,10 +70,10 @@ class MainActivity : AppCompatActivity() {
         clusterManager.addItems(places)
         clusterManager.cluster()
 
-        clusterManager.setOnClusterClickListener {item ->
+        clusterManager.setOnClusterItemClickListener {item ->
             addCircle(googleMap, item)
 
-            return@setOnClusterClickListener false
+            return@setOnClusterItemClickListener false
         }
 
         googleMap.setOnCameraIdleListener {
@@ -68,8 +81,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addCircle(googleMap: GoogleMap, item: Cluster<Place>?) {
-        TODO("Not yet implemented")
+    private fun addCircle(googleMap: GoogleMap, item: Place) {
+        circle?.remove()
+
+        circle = googleMap.addCircle(
+            CircleOptions()
+                .radius(1000.0)
+                .center(item.position)
+                .fillColor(ContextCompat.getColor(this, R.color.colorPrimaryTranslucent))
+                .strokeColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        )
     }
 
 
